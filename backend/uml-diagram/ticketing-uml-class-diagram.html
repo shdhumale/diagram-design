@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ticketing Backend UML Class Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f5f5f5;
+      --ink: #2d3142;
+      --muted: #4f5d75;
+      --soft: #7a8399;
+      --rule: rgba(45, 49, 66, 0.12);
+      --rule-solid: #bfc0c0;
+      --accent: #eb6c36;
+      --accent-tint: rgba(235, 108, 54, 0.08);
+      --link: #2e5aa8;
+    }
+
+    html, body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .title {
+      font-family: "Instrument Serif", serif;
+      font-size: 30px;
+      font-weight: 400;
+      margin: 0 0 6px 0;
+    }
+
+    .subtitle {
+      font-family: "Geist Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 12px 0;
+      letter-spacing: 0.03em;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--rule);
+      background: var(--paper);
+    }
+
+    .class-name {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      fill: var(--ink);
+      text-anchor: middle;
+    }
+
+    .member {
+      font-family: "Geist Mono", monospace;
+      font-size: 9px;
+      fill: var(--ink);
+    }
+
+    .legend-title {
+      font-family: "Geist", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      fill: var(--ink);
+    }
+
+    .legend-text {
+      font-family: "Geist Mono", monospace;
+      font-size: 8px;
+      fill: var(--muted);
+    }
+
+    .mult {
+      font-family: "Geist Mono", monospace;
+      font-size: 8px;
+      fill: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="title">Ticketing Backend UML Class Diagram</h1>
+    <p class="subtitle">source: backend/src/main/java/com/ruflo/ticketing</p>
+
+    <svg viewBox="0 0 1400 880" role="img" aria-label="UML class diagram for ticketing backend">
+      <defs>
+        <marker id="arrow-open" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <path d="M 0 0 L 9 4 L 0 8" fill="none" stroke="#4f5d75" stroke-width="1.3" />
+        </marker>
+        <marker id="arrow-open-link" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <path d="M 0 0 L 9 4 L 0 8" fill="none" stroke="#2e5aa8" stroke-width="1.3" />
+        </marker>
+        <marker id="triangle-hollow" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto">
+          <path d="M 0 0 L 11 6 L 0 12 Z" fill="#f5f5f5" stroke="#2d3142" stroke-width="1.2" />
+        </marker>
+        <marker id="diamond-filled" markerWidth="12" markerHeight="10" refX="2" refY="5" orient="auto-start-reverse">
+          <path d="M 0 5 L 4 0 L 8 5 L 4 10 Z" fill="#2d3142" stroke="#2d3142" stroke-width="1" />
+        </marker>
+        <marker id="diamond-hollow" markerWidth="12" markerHeight="10" refX="2" refY="5" orient="auto-start-reverse">
+          <path d="M 0 5 L 4 0 L 8 5 L 4 10 Z" fill="#f5f5f5" stroke="#2d3142" stroke-width="1" />
+        </marker>
+      </defs>
+
+      <rect x="0" y="0" width="1400" height="880" fill="#f5f5f5" />
+
+      <!-- Connectors: draw before boxes -->
+      <path d="M 340 228 H 430" stroke="#4f5d75" stroke-width="1.4" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow-open)" />
+      <path d="M 210 328 V 430" stroke="#4f5d75" stroke-width="1.4" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow-open)" />
+      <path d="M 340 286 H 560 V 430" stroke="#4f5d75" stroke-width="1.4" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow-open)" />
+      <path d="M 340 248 H 780 V 430" stroke="#4f5d75" stroke-width="1.4" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow-open)" />
+
+      <path d="M 730 250 H 820" stroke="#2d3142" stroke-width="1.6" fill="none" marker-start="url(#diamond-filled)" />
+      <text x="746" y="241" class="mult">1</text>
+      <text x="802" y="241" class="mult">0..*</text>
+
+      <path d="M 1100 200 H 1180" stroke="#4f5d75" stroke-width="1.4" fill="none" marker-end="url(#arrow-open)" />
+      <text x="1114" y="192" class="mult">1</text>
+      <text x="1164" y="192" class="mult">1</text>
+
+      <path d="M 730 292 H 1080 V 220 H 1180" stroke="#4f5d75" stroke-width="1.4" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow-open)" />
+
+      <!-- Class: TicketController -->
+      <g>
+        <rect x="80" y="120" width="260" height="220" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1.3" />
+        <line x1="80" y1="152" x2="340" y2="152" stroke="rgba(45,49,66,0.12)" />
+        <line x1="80" y1="238" x2="340" y2="238" stroke="rgba(45,49,66,0.12)" />
+        <text x="210" y="141" class="class-name">TicketController</text>
+
+        <text x="92" y="170" class="member">- ticketService: TicketService</text>
+
+        <text x="92" y="256" class="member">+ listTickets(...): List&lt;Ticket&gt;</text>
+        <text x="92" y="273" class="member">+ getTicket(ticketId: long): Ticket</text>
+        <text x="92" y="290" class="member">+ createTicket(req: TicketCreateRequest): ResponseEntity&lt;Ticket&gt;</text>
+        <text x="92" y="307" class="member">+ updateTicket(id: long, req: TicketUpdateRequest): Ticket</text>
+        <text x="92" y="324" class="member">+ deleteTicket(id: long): ResponseEntity&lt;Void&gt;</text>
+      </g>
+
+      <!-- Class: TicketService (focal) -->
+      <g>
+        <rect x="430" y="120" width="300" height="250" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.5" />
+        <line x1="430" y1="152" x2="730" y2="152" stroke="rgba(45,49,66,0.12)" />
+        <line x1="430" y1="234" x2="730" y2="234" stroke="rgba(45,49,66,0.12)" />
+        <text x="580" y="141" class="class-name">TicketService</text>
+
+        <text x="442" y="170" class="member">- idSequence: AtomicLong</text>
+        <text x="442" y="187" class="member">- tickets: Map&lt;Long, Ticket&gt;</text>
+        <text x="442" y="204" class="member">- ALLOWED_TRANSITIONS: Map&lt;TicketStatus, List&lt;TicketStatus&gt;&gt;</text>
+
+        <text x="442" y="252" class="member">+ create(req: TicketCreateRequest): Ticket</text>
+        <text x="442" y="269" class="member">+ getById(id: long): Ticket</text>
+        <text x="442" y="286" class="member">+ list(query, status, sortBy, sortOrder): List&lt;Ticket&gt;</text>
+        <text x="442" y="303" class="member">+ update(id: long, req: TicketUpdateRequest): Ticket</text>
+        <text x="442" y="320" class="member">+ delete(id: long): void</text>
+        <text x="442" y="337" class="member">+ summary(): Map&lt;String, Long&gt;</text>
+        <text x="442" y="354" class="member">+ count(): long</text>
+      </g>
+
+      <!-- Class: Ticket -->
+      <g>
+        <rect x="820" y="120" width="280" height="230" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1.3" />
+        <line x1="820" y1="152" x2="1100" y2="152" stroke="rgba(45,49,66,0.12)" />
+        <line x1="820" y1="252" x2="1100" y2="252" stroke="rgba(45,49,66,0.12)" />
+        <text x="960" y="141" class="class-name">Ticket</text>
+
+        <text x="832" y="170" class="member">- id: long</text>
+        <text x="832" y="187" class="member">- name: String</text>
+        <text x="832" y="204" class="member">- description: String</text>
+        <text x="832" y="221" class="member">- status: TicketStatus</text>
+        <text x="832" y="238" class="member">- createdAt: Instant</text>
+
+        <text x="832" y="270" class="member">+ getId(): long</text>
+        <text x="832" y="287" class="member">+ getName(): String</text>
+        <text x="832" y="304" class="member">+ getStatus(): TicketStatus</text>
+        <text x="832" y="321" class="member">+ setStatus(status: TicketStatus): void</text>
+        <text x="832" y="338" class="member">+ setUpdatedAt(instant: Instant): void</text>
+      </g>
+
+      <!-- Enum: TicketStatus -->
+      <g>
+        <rect x="1180" y="120" width="180" height="160" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1.3" />
+        <line x1="1180" y1="152" x2="1360" y2="152" stroke="rgba(45,49,66,0.12)" />
+        <text x="1270" y="139" class="member" style="font-size:8px; letter-spacing:0.12em;">ENUM</text>
+        <text x="1270" y="148" class="class-name">TicketStatus</text>
+
+        <text x="1192" y="170" class="member">+ New</text>
+        <text x="1192" y="187" class="member">+ Assigned</text>
+        <text x="1192" y="204" class="member">+ Done</text>
+        <text x="1192" y="221" class="member">+ Escalate</text>
+      </g>
+
+      <!-- Class: TicketCreateRequest -->
+      <g>
+        <rect x="80" y="430" width="260" height="200" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1.3" />
+        <line x1="80" y1="462" x2="340" y2="462" stroke="rgba(45,49,66,0.12)" />
+        <line x1="80" y1="546" x2="340" y2="546" stroke="rgba(45,49,66,0.12)" />
+        <text x="210" y="451" class="class-name">TicketCreateRequest</text>
+
+        <text x="92" y="480" class="member">- name: String</text>
+        <text x="92" y="497" class="member">- description: String</text>
+        <text x="92" y="514" class="member">- status: TicketStatus</text>
+
+        <text x="92" y="564" class="member">+ getName(): String</text>
+        <text x="92" y="581" class="member">+ getDescription(): String</text>
+        <text x="92" y="598" class="member">+ getStatus(): TicketStatus</text>
+      </g>
+
+      <!-- Class: TicketUpdateRequest -->
+      <g>
+        <rect x="430" y="430" width="260" height="200" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1.3" />
+        <line x1="430" y1="462" x2="690" y2="462" stroke="rgba(45,49,66,0.12)" />
+        <line x1="430" y1="546" x2="690" y2="546" stroke="rgba(45,49,66,0.12)" />
+        <text x="560" y="451" class="class-name">TicketUpdateRequest</text>
+
+        <text x="442" y="480" class="member">- name: String</text>
+        <text x="442" y="497" class="member">- description: String</text>
+        <text x="442" y="514" class="member">- status: TicketStatus</text>
+
+        <text x="442" y="564" class="member">+ getName(): String</text>
+        <text x="442" y="581" class="member">+ getDescription(): String</text>
+        <text x="442" y="598" class="member">+ getStatus(): TicketStatus</text>
+      </g>
+
+      <!-- Record: TicketSummaryResponse -->
+      <g>
+        <rect x="820" y="430" width="300" height="160" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1.3" />
+        <line x1="820" y1="462" x2="1120" y2="462" stroke="rgba(45,49,66,0.12)" />
+        <line x1="820" y1="526" x2="1120" y2="526" stroke="rgba(45,49,66,0.12)" />
+        <text x="970" y="450" class="member" style="font-size:8px; letter-spacing:0.12em;">RECORD</text>
+        <text x="970" y="459" class="class-name">TicketSummaryResponse</text>
+
+        <text x="832" y="480" class="member">- totalTickets: long</text>
+        <text x="832" y="497" class="member">- byStatus: Map&lt;String, Long&gt;</text>
+
+        <text x="832" y="544" class="member">+ totalTickets(): long</text>
+        <text x="832" y="561" class="member">+ byStatus(): Map&lt;String, Long&gt;</text>
+      </g>
+
+      <!-- Legend with full UML relationship vocabulary -->
+      <g>
+        <rect x="1080" y="350" width="280" height="300" rx="6" fill="#ffffff" stroke="#bfc0c0" stroke-width="1.1" />
+        <text x="1094" y="372" class="legend-title">Relationship Legend</text>
+
+        <line x1="1094" y1="395" x2="1170" y2="395" stroke="#2d3142" stroke-width="1.4" marker-end="url(#triangle-hollow)" />
+        <text x="1182" y="398" class="legend-text">Inheritance (extends)</text>
+
+        <line x1="1094" y1="420" x2="1170" y2="420" stroke="#2d3142" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#triangle-hollow)" />
+        <text x="1182" y="423" class="legend-text">Realization (implements)</text>
+
+        <line x1="1094" y1="445" x2="1170" y2="445" stroke="#2d3142" stroke-width="1.4" marker-start="url(#diamond-filled)" />
+        <text x="1182" y="448" class="legend-text">Composition</text>
+
+        <line x1="1094" y1="470" x2="1170" y2="470" stroke="#2d3142" stroke-width="1.4" marker-start="url(#diamond-hollow)" />
+        <text x="1182" y="473" class="legend-text">Aggregation</text>
+
+        <line x1="1094" y1="495" x2="1170" y2="495" stroke="#4f5d75" stroke-width="1.4" marker-end="url(#arrow-open)" />
+        <text x="1182" y="498" class="legend-text">Association</text>
+
+        <line x1="1094" y1="520" x2="1170" y2="520" stroke="#4f5d75" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arrow-open)" />
+        <text x="1182" y="523" class="legend-text">Dependency (uses)</text>
+
+        <text x="1094" y="556" class="legend-text">Model scope:</text>
+        <text x="1094" y="572" class="legend-text">API + service + domain classes</text>
+        <text x="1094" y="588" class="legend-text">from com.ruflo.ticketing package.</text>
+      </g>
+    </svg>
+  </div>
+</body>
+</html>

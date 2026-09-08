@@ -1,0 +1,793 @@
+openapi: 3.0.3
+info:
+  title: Ticket Management System API
+  version: 1.0.0
+  description: |
+    REST API for the target-state Ticket Management System.
+
+    This contract is derived from the product and architecture documents in the
+    document folder and represents the enterprise API for an Angular 17 frontend
+    with a Spring Boot 3 backend.
+
+    Security model:
+    - OAuth2/OIDC with JWT bearer tokens
+    - Roles: VIEWER, EDITOR, ADMIN
+
+    Validation model:
+    - name is required, trimmed, and limited to 120 characters
+    - description is optional and limited to 1000 characters
+    - status must be one of New, Assigned, Done, Escalate
+    - status transitions are validated on update
+servers:
+  - url: https://api.ticket-system.example.com
+    description: Production
+  - url: https://staging-api.ticket-system.example.com
+    description: Staging
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: Tickets
+    description: Ticket CRUD, search, and summary endpoints
+  - name: Audit
+    description: Ticket audit trail retrieval endpoints
+  - name: Operations
+    description: Service health and operational endpoints
+security:
+  - oauth2: []
+paths:
+  /api/v1/tickets:
+    get:
+      tags:
+        - Tickets
+      summary: List and search tickets
+      description: |
+        Returns paginated tickets with optional query, status filtering, and sorting.
+
+        Security requirements:
+        - Requires a valid OAuth2/OIDC JWT bearer token
+        - Allowed roles: VIEWER, EDITOR, ADMIN
+
+        Validation rules:
+        - query maximum length is 256 characters
+        - status must be one of New, Assigned, Done, Escalate
+        - sortBy must be one of id, name, status, createdAt, updatedAt
+        - sortOrder must be asc or desc
+        - page must be greater than or equal to 0
+        - pageSize must be between 1 and 100
+      operationId: listTickets
+      parameters:
+        - $ref: '#/components/parameters/query'
+        - $ref: '#/components/parameters/status'
+        - $ref: '#/components/parameters/sortBy'
+        - $ref: '#/components/parameters/sortOrder'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Tickets returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - Tickets
+      summary: Create a ticket
+      description: |
+        Creates a new ticket.
+
+        Security requirements:
+        - Requires a valid OAuth2/OIDC JWT bearer token
+        - Allowed roles: EDITOR, ADMIN
+
+        Validation rules:
+        - name is required, must not be blank after trimming, and maximum 120 characters
+        - description is optional and maximum 1000 characters
+        - status is required and must be one of New, Assigned, Done, Escalate
+      operationId: createTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketCreateRequest'
+      responses:
+        '201':
+          description: Ticket created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/tickets/summary:
+    get:
+      tags:
+        - Tickets
+      summary: Get ticket summary counts
+      description: |
+        Returns total ticket count and counts by status.
+
+        Security requirements:
+        - Requires a valid OAuth2/OIDC JWT bearer token
+        - Allowed roles: VIEWER, EDITOR, ADMIN
+      operationId: getTicketSummary
+      responses:
+        '200':
+          description: Ticket summary returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketSummaryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/tickets/{ticketId}:
+    get:
+      tags:
+        - Tickets
+      summary: Get ticket by ID
+      description: |
+        Returns a single ticket.
+
+        Security requirements:
+        - Requires a valid OAuth2/OIDC JWT bearer token
+        - Allowed roles: VIEWER, EDITOR, ADMIN
+
+        Validation rules:
+        - ticketId must be a positive integer
+      operationId: getTicketById
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+      responses:
+        '200':
+          description: Ticket returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Tickets
+      summary: Update a ticket
+      description: |
+        Updates an existing ticket.
+
+        Security requirements:
+        - Requires a valid OAuth2/OIDC JWT bearer token
+        - Allowed roles: EDITOR, ADMIN
+
+        Validation rules:
+        - ticketId must be a positive integer
+        - name is required, must not be blank after trimming, and maximum 120 characters
+        - description is optional and maximum 1000 characters
+        - status is required and must be one of New, Assigned, Done, Escalate
+        - allowed transitions:
+          - New -> Assigned, Done, Escalate
+          - Assigned -> New, Done, Escalate
+          - Escalate -> Assigned, Done
+          - Done -> Assigned
+      operationId: updateTicket
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketUpdateRequest'
+      responses:
+        '200':
+          description: Ticket updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+        - Tickets
+      summary: Delete a ticket
+      description: |
+        Permanently deletes a ticket.
+
+        Security requirements:
+        - Requires a valid OAuth2/OIDC JWT bearer token
+        - Allowed roles: ADMIN
+
+        Validation rules:
+        - ticketId must be a positive integer
+      operationId: deleteTicket
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+      responses:
+        '204':
+          description: Ticket deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/tickets/{ticketId}/audit:
+    get:
+      tags:
+        - Audit
+      summary: Get ticket audit trail
+      description: |
+        Returns the paginated audit history for a ticket.
+
+        Security requirements:
+        - Requires a valid OAuth2/OIDC JWT bearer token
+        - Allowed roles: VIEWER, EDITOR, ADMIN
+
+        Validation rules:
+        - ticketId must be a positive integer
+        - page must be greater than or equal to 0
+        - pageSize must be between 1 and 200
+      operationId: getTicketAuditTrail
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+        - $ref: '#/components/parameters/page'
+        - name: pageSize
+          in: query
+          description: Number of audit records to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        '200':
+          description: Audit trail returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketAuditPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /actuator/health:
+    get:
+      tags:
+        - Operations
+      summary: Health check
+      description: |
+        Returns service health information.
+
+        Security requirements:
+        - Public in non-production or protected through infrastructure policy in production
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      description: OAuth2/OIDC bearer token using JWT
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth2/authorize
+          tokenUrl: https://auth.example.com/oauth2/token
+          scopes:
+            tickets.read: Read tickets and audit records
+            tickets.write: Create and update tickets
+            tickets.delete: Delete tickets
+  parameters:
+    ticketId:
+      name: ticketId
+      in: path
+      required: true
+      description: Unique numeric ticket identifier
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    query:
+      name: query
+      in: query
+      required: false
+      description: Case-insensitive partial-match search against ticket name and description
+      schema:
+        type: string
+        maxLength: 256
+    status:
+      name: status
+      in: query
+      required: false
+      description: Filter by ticket status
+      schema:
+        $ref: '#/components/schemas/TicketStatus'
+    sortBy:
+      name: sortBy
+      in: query
+      required: false
+      description: Sort field
+      schema:
+        type: string
+        enum:
+          - id
+          - name
+          - status
+          - createdAt
+          - updatedAt
+        default: id
+    sortOrder:
+      name: sortOrder
+      in: query
+      required: false
+      description: Sort direction
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: asc
+    page:
+      name: page
+      in: query
+      required: false
+      description: Zero-based page index
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    pageSize:
+      name: pageSize
+      in: query
+      required: false
+      description: Number of records to return
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  responses:
+    BadRequest:
+      description: Request failed validation or contains invalid parameter values
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidPagination:
+              value:
+                code: BAD_REQUEST
+                message: pageSize must be between 1 and 100
+                traceId: 6a0e6a43d1934bd4
+                timestamp: '2026-08-24T14:20:00Z'
+    ValidationError:
+      description: Request body failed one or more validation rules
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+          examples:
+            nameTooLong:
+              value:
+                code: VALIDATION_ERROR
+                message: One or more validation rules failed
+                traceId: 6a0e6a43d1934bd4
+                timestamp: '2026-08-24T14:20:00Z'
+                fieldErrors:
+                  - field: name
+                    message: must be 120 characters or fewer
+    Unauthorized:
+      description: Missing, invalid, or expired bearer token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            unauthorized:
+              value:
+                code: UNAUTHORIZED
+                message: Authentication is required to access this resource
+                traceId: 6a0e6a43d1934bd4
+                timestamp: '2026-08-24T14:20:00Z'
+    Forbidden:
+      description: Authenticated user lacks required role or scope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            forbidden:
+              value:
+                code: FORBIDDEN
+                message: You do not have permission to perform this action
+                traceId: 6a0e6a43d1934bd4
+                timestamp: '2026-08-24T14:20:00Z'
+    NotFound:
+      description: Requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notFound:
+              value:
+                code: TICKET_NOT_FOUND
+                message: Ticket with the specified ID does not exist
+                traceId: 6a0e6a43d1934bd4
+                timestamp: '2026-08-24T14:20:00Z'
+    Conflict:
+      description: Request conflicts with current resource state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidTransition:
+              value:
+                code: INVALID_STATUS_TRANSITION
+                message: Cannot transition ticket status from Done to New
+                traceId: 6a0e6a43d1934bd4
+                timestamp: '2026-08-24T14:20:00Z'
+  schemas:
+    TicketStatus:
+      type: string
+      enum:
+        - New
+        - Assigned
+        - Done
+        - Escalate
+    Ticket:
+      type: object
+      required:
+        - id
+        - name
+        - status
+        - createdAt
+        - updatedAt
+        - createdBy
+        - updatedBy
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 123
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Critical production bug
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: Database connection pool exhausted
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-24T14:32:15Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-24T15:01:30Z'
+        createdBy:
+          type: string
+          example: alice@example.com
+        updatedBy:
+          type: string
+          example: bob@example.com
+    TicketCreateRequest:
+      type: object
+      required:
+        - name
+        - status
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: Required. Leading and trailing whitespace should be trimmed before validation.
+          example: Critical production bug
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: Database connection pool exhausted
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+      additionalProperties: false
+    TicketUpdateRequest:
+      type: object
+      required:
+        - name
+        - status
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: Required. Leading and trailing whitespace should be trimmed before validation.
+          example: Critical production bug - resolved
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: Applied connection pool fix and verified service recovery
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+      additionalProperties: false
+    TicketPageResponse:
+      type: object
+      required:
+        - content
+        - pageNumber
+        - pageSize
+        - totalElements
+        - totalPages
+        - first
+        - last
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ticket'
+        pageNumber:
+          type: integer
+          minimum: 0
+          example: 0
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          example: 87
+        totalPages:
+          type: integer
+          minimum: 0
+          example: 5
+        first:
+          type: boolean
+          example: true
+        last:
+          type: boolean
+          example: false
+    TicketSummaryResponse:
+      type: object
+      required:
+        - totalTickets
+        - byStatus
+        - lastUpdated
+      properties:
+        totalTickets:
+          type: integer
+          format: int64
+          minimum: 0
+          example: 87
+        byStatus:
+          type: object
+          required:
+            - New
+            - Assigned
+            - Done
+            - Escalate
+          properties:
+            New:
+              type: integer
+              minimum: 0
+              example: 12
+            Assigned:
+              type: integer
+              minimum: 0
+              example: 34
+            Done:
+              type: integer
+              minimum: 0
+              example: 39
+            Escalate:
+              type: integer
+              minimum: 0
+              example: 2
+        lastUpdated:
+          type: string
+          format: date-time
+          example: '2026-08-24T16:45:22Z'
+    FieldError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          example: name
+        message:
+          type: string
+          example: must be 120 characters or fewer
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - traceId
+        - timestamp
+      properties:
+        code:
+          type: string
+          example: BAD_REQUEST
+        message:
+          type: string
+          example: Invalid request
+        traceId:
+          type: string
+          example: 6a0e6a43d1934bd4
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-08-24T14:20:00Z'
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          required:
+            - fieldErrors
+          properties:
+            fieldErrors:
+              type: array
+              items:
+                $ref: '#/components/schemas/FieldError'
+    ValueChange:
+      type: object
+      properties:
+        oldValue:
+          nullable: true
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+        newValue:
+          nullable: true
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+    AuditEvent:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - actor
+        - changes
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        eventType:
+          type: string
+          enum:
+            - TICKET_CREATED
+            - TICKET_UPDATED
+            - TICKET_DELETED
+            - STATUS_CHANGED
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-08-24T15:47:32Z'
+        actor:
+          type: string
+          example: alice@example.com
+        changes:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ValueChange'
+    TicketAuditPageResponse:
+      type: object
+      required:
+        - ticketId
+        - content
+        - pageNumber
+        - pageSize
+        - totalElements
+        - totalPages
+        - first
+        - last
+      properties:
+        ticketId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 123
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+        pageNumber:
+          type: integer
+          minimum: 0
+          example: 0
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 200
+          example: 50
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          example: 2
+        totalPages:
+          type: integer
+          minimum: 0
+          example: 1
+        first:
+          type: boolean
+          example: true
+        last:
+          type: boolean
+          example: true
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: UP
+        components:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                example: UP
