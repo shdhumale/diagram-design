@@ -1,8 +1,6 @@
 # diagram-design
 This repo shows the usage of diagram-design repo to create software diagram like sequence, UML for the given project
 
-Here is a comprehensive and professional template for a `README.md` file tailored for the `diagram-design` repository. You can copy, modify, and save this directly into your project root.
-
 ```markdown
 # Diagram Design
 
