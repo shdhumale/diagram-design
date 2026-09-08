@@ -95,8 +95,3 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 
 
-```
-
-<FollowUp label="Want me to customize this README further with specific sections (e.g., specific architecture diagrams or deployment instructions)?" query="Yes, customize the README with specific architecture diagrams and details about the tech stack."/>
-
-```
